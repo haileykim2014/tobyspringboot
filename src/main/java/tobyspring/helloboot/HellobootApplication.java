@@ -1,18 +1,39 @@
 package tobyspring.helloboot;
 
+import java.io.IOException;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServer;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 
 public class HellobootApplication {
 	public static void main(String[] args) {
-//		TomcatServletWebServerFactory serverFactory = new TomcatServletWebServerFactory();
-//		ServletWebServerFactory serverFactory = new JettyServletWebServerFactory();
 			ServletWebServerFactory serverFactory = new TomcatServletWebServerFactory();
-			WebServer webServer = serverFactory.getWebServer(); //다른 서블릿컨테이너도 지원하도록 추상화되어있다.
+			WebServer webServer = serverFactory.getWebServer(servletContext -> {
+				servletContext.addServlet("hello", new HttpServlet() {
+					@Override
+					protected void service(HttpServletRequest req, HttpServletResponse resp)
+							throws ServletException, IOException {
+						String name = req.getParameter("name");
+
+						resp.setStatus(HttpStatus.OK.value());
+						resp.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE);
+						resp.getWriter().println("Hello "+name);
+					}
+				}).addMapping("/hello");
+
+			}); //다른 서블릿컨테이너도 지원하도록 추상화되어있다.
 			webServer.start();
 	}
 
