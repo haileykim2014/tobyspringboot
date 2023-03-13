@@ -1,14 +1,15 @@
 package tobyspring.helloboot;
 
 import java.util.Objects;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 public class HelloController {
-  public String hello(String name){
-    SimpleHelloService service = new SimpleHelloService();
-//    if(name == null) throw
+  private final HelloService helloService;
 
-    return service.sayHello(Objects.requireNonNull(name));
+  public HelloController(HelloService helloService) {
+    this.helloService = helloService;
+  }
+
+  public String hello(String name){
+    return helloService.sayHello(Objects.requireNonNull(name));
   }
 }
