@@ -9,19 +9,24 @@ import org.springframework.web.servlet.DispatcherServlet;
 public class HellobootApplication {
   public static void main(String[] args) {
     //스프링 컨테이너 만들기
-    GenericWebApplicationContext applicationContext = new GenericWebApplicationContext();
+    GenericWebApplicationContext applicationContext = new GenericWebApplicationContext(){
+      @Override
+      protected void onRefresh() {
+        super.onRefresh();
+
+        ServletWebServerFactory serverFactory = new TomcatServletWebServerFactory();
+        WebServer webServer = serverFactory.getWebServer(servletContext -> {
+          servletContext.addServlet("frontcontroller",
+              new DispatcherServlet(this)
+          ).addMapping("/*");
+
+        }); //다른 서블릿컨테이너도 지원하도록 추상화되어있다.
+        webServer.start();
+      }
+    };
     applicationContext.registerBean(HelloController.class);
     applicationContext.registerBean(SimpleHelloService.class);
     applicationContext.refresh();
-
-    ServletWebServerFactory serverFactory = new TomcatServletWebServerFactory();
-    WebServer webServer = serverFactory.getWebServer(servletContext -> {
-      servletContext.addServlet("frontcontroller",
-          new DispatcherServlet(applicationContext)
-          ).addMapping("/*");
-
-    }); //다른 서블릿컨테이너도 지원하도록 추상화되어있다.
-    webServer.start();
   }
 
 }
